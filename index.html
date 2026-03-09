@@ -19,7 +19,7 @@
                 <p id="current-date-display" class="text-gray-500 text-sm font-medium"></p>
             </div>
             <div class="flex gap-2">
-                <button onclick="openAdjustmentModal()" class="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg font-bold uppercase tracking-wider transition">Ajustar Saldos (Día 4)</button>
+                <button onclick="openAdjustmentModal()" class="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg font-bold uppercase tracking-wider transition">Ajustar Saldos TDC</button>
                 <button onclick="confirmReset()" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-500 px-3 py-2 rounded-lg font-bold uppercase tracking-wider transition">Reset</button>
             </div>
         </header>
@@ -47,7 +47,6 @@
             <div class="space-y-6">
                 <div class="card p-5 bg-slate-900 text-white">
                     <h3 class="text-[10px] font-black uppercase text-blue-400 mb-4 tracking-widest text-center">Estado de Créditos (Corte: Día 03)</h3>
-                    
                     <div class="mb-4 pb-4 border-b border-slate-800">
                         <div class="flex justify-between items-end mb-1">
                             <span class="text-xs font-bold text-slate-400 uppercase">TDC Like U</span>
@@ -55,7 +54,6 @@
                         </div>
                         <div id="next-likeu" class="text-[9px] text-slate-500 italic">Próximo corte: $0</div>
                     </div>
-
                     <div class="mb-2">
                         <div class="flex justify-between items-end mb-1">
                             <span class="text-xs font-bold text-slate-400 uppercase">TDC AMEX</span>
@@ -63,16 +61,12 @@
                         </div>
                         <div id="next-amex" class="text-[9px] text-slate-500 italic">Próximo corte: $0</div>
                     </div>
-                    
-                    <div class="mt-4 pt-2 bg-slate-800 rounded p-2 text-center">
-                        <p class="text-[9px] text-slate-400 uppercase font-bold">Fecha Límite de Pago: <span class="text-white">Día 25</span></p>
-                    </div>
                 </div>
 
                 <div class="card p-6">
                     <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800"><span>📝</span> Movimiento</h2>
                     <form id="transaction-form" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 gap-4">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo</label>
                                 <select id="type" onchange="updateFormLogic()" class="w-full p-2 border rounded-lg text-sm bg-gray-50 font-semibold">
@@ -82,11 +76,30 @@
                                     <option value="debt-pay">Pagar Tarjeta (↘)</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div id="debt-pay-options" class="hidden space-y-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
                             <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" id="method-label">Método</label>
-                                <select id="method" class="w-full p-2 border rounded-lg text-sm font-semibold">
-                                    </select>
+                                <label class="block text-[10px] font-bold text-blue-700 uppercase mb-1">¿Qué tarjeta pagas?</label>
+                                <select id="target-card" class="w-full p-2 border border-blue-200 rounded-lg text-sm font-semibold">
+                                    <option value="likeu">Pagar Like U</option>
+                                    <option value="amex">Pagar AMEX</option>
+                                </select>
                             </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-700 uppercase mb-1">¿De dónde sale el dinero?</label>
+                                <select id="pay-source" class="w-full p-2 border border-blue-200 rounded-lg text-sm font-semibold">
+                                    <option value="santander">Santander</option>
+                                    <option value="nu">Nu Débito</option>
+                                    <option value="cash">Efectivo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="standard-method-div">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Método</label>
+                            <select id="method" class="w-full p-2 border rounded-lg text-sm font-semibold">
+                                </select>
                         </div>
 
                         <div id="transfer-extra" class="hidden bg-purple-50 p-3 rounded-lg border border-purple-100">
@@ -100,19 +113,12 @@
 
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Concepto</label>
-                            <input type="text" id="concept" placeholder="Ej: Pago de Renta, Súper..." class="w-full p-2 border rounded-lg text-sm" required>
+                            <input type="text" id="concept" placeholder="Ej: Pago de Renta..." class="w-full p-2 border rounded-lg text-sm" required>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Monto ($)</label>
-                                <input type="number" id="amount" step="0.01" class="w-full p-2 border rounded-lg text-sm font-black text-gray-900" required>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label>
-                                <select id="category" class="w-full p-2 border rounded-lg text-sm font-semibold">
-                                    </select>
-                            </div>
+                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Monto ($)</label><input type="number" id="amount" step="0.01" class="w-full p-2 border rounded-lg text-sm font-black" required></div>
+                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label><select id="category" class="w-full p-2 border rounded-lg text-sm font-semibold"></select></div>
                         </div>
 
                         <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition uppercase text-[10px] tracking-widest shadow-md">Registrar Movimiento</button>
@@ -123,28 +129,13 @@
             <div class="lg:col-span-2 space-y-6">
                 <div class="card p-6 border-t-4 border-blue-600">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-gray-800">Historial de Actividad</h2>
+                        <h2 class="text-xl font-bold text-gray-800">Historial</h2>
                         <div class="text-right">
                             <div class="text-[9px] font-black text-blue-600 uppercase mb-1">Meta $80k (Nu) <span id="progress-percent" class="ml-2 italic text-gray-400">0%</span></div>
-                            <div class="w-48 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                                <div id="progress-fill" class="bg-blue-600 h-full progress-bar" style="width: 0%"></div>
-                            </div>
+                            <div class="w-48 bg-gray-100 rounded-full h-1.5 overflow-hidden"><div id="progress-fill" class="bg-blue-600 h-full progress-bar" style="width: 0%"></div></div>
                         </div>
                     </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="text-[10px] text-gray-400 uppercase tracking-wider border-b">
-                                <tr>
-                                    <th class="pb-3 px-2">Fecha</th>
-                                    <th class="pb-3 px-2">Método</th>
-                                    <th class="pb-3 px-2">Concepto</th>
-                                    <th class="pb-3 px-2 text-right">Monto</th>
-                                </tr>
-                            </thead>
-                            <tbody id="history-body" class="divide-y divide-gray-50"></tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="text-[10px] text-gray-400 uppercase tracking-wider border-b"><tr><th class="pb-3 px-2">Fecha</th><th class="pb-3 px-2">Método</th><th class="pb-3 px-2">Concepto</th><th class="pb-3 px-2 text-right">Monto</th></tr></thead><tbody id="history-body" class="divide-y divide-gray-50"></tbody></table></div>
                 </div>
             </div>
         </div>
@@ -152,13 +143,12 @@
 
     <div id="adj-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h3 class="text-lg font-bold mb-4">Ajuste Manual de Saldos</h3>
-            <p class="text-xs text-gray-500 mb-4">Usa esto el día 4 para sincronizar tus deudas reales si olvidaste registrar algo.</p>
+            <h3 class="text-lg font-bold mb-4">Ajustar Saldos TDC</h3>
             <div class="space-y-4">
                 <div><label class="text-[10px] font-bold uppercase text-gray-400">Deuda Real Like U</label><input type="number" id="adj-likeu" class="w-full p-2 border rounded mt-1"></div>
                 <div><label class="text-[10px] font-bold uppercase text-gray-400">Deuda Real AMEX</label><input type="number" id="adj-amex" class="w-full p-2 border rounded mt-1"></div>
                 <div class="flex gap-2 pt-4">
-                    <button onclick="saveAdjustment()" class="flex-1 bg-black text-white py-2 rounded font-bold text-xs uppercase">Guardar Cambios</button>
+                    <button onclick="saveAdjustment()" class="flex-1 bg-black text-white py-2 rounded font-bold text-xs uppercase">Guardar</button>
                     <button onclick="closeAdjustmentModal()" class="flex-1 bg-gray-200 py-2 rounded font-bold text-xs uppercase">Cancelar</button>
                 </div>
             </div>
@@ -168,37 +158,32 @@
     <script>
         const initialState = {
             nu: 7466.48, nuAhorro: 35000, santander: 14753.00, cash: 350.00,
-            debtLikeU: 28455.34, nextLikeU: 0,
-            debtAMEX: 32893.69, nextAMEX: 0,
-            target: 80000,
-            transactions: []
+            debtLikeU: 28455.34, nextLikeU: 0, debtAMEX: 32893.69, nextAMEX: 0,
+            target: 80000, transactions: []
         };
 
-        let state = JSON.parse(localStorage.getItem('finanzasMatthew_v2')) || initialState;
+        let state = JSON.parse(localStorage.getItem('finanzasMatthew_v3')) || initialState;
 
-        function saveMemory() { localStorage.setItem('finanzasMatthew_v2', JSON.stringify(state)); }
-        
+        function saveMemory() { localStorage.setItem('finanzasMatthew_v3', JSON.stringify(state)); }
         function confirmReset() { if(confirm("¿Reiniciar todo?")) { localStorage.clear(); location.reload(); } }
 
         function getCDMXInfo() {
             const now = new Date();
-            const day = now.getDate();
-            const timeStr = new Intl.DateTimeFormat('es-MX', {
-                timeZone: 'America/Mexico_City',
-                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false
-            }).format(now);
-            return { day, timeStr };
+            const timeStr = new Intl.DateTimeFormat('es-MX', { timeZone: 'America/Mexico_City', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(now);
+            return { day: now.getDate(), timeStr };
         }
 
         function updateFormLogic() {
             const type = document.getElementById('type').value;
-            const extra = document.getElementById('transfer-extra');
+            const debtOptions = document.getElementById('debt-pay-options');
+            const stdMethod = document.getElementById('standard-method-div');
+            const transferExtra = document.getElementById('transfer-extra');
             const catSelect = document.getElementById('category');
             const methodSelect = document.getElementById('method');
-            const methodLabel = document.getElementById('method-label');
-            
-            extra.classList.toggle('hidden', type !== 'transfer');
-            methodLabel.innerText = type === 'debt-pay' ? '¿Qué tarjeta pagas?' : 'Método';
+
+            debtOptions.classList.toggle('hidden', type !== 'debt-pay');
+            stdMethod.classList.toggle('hidden', type === 'debt-pay');
+            transferExtra.classList.toggle('hidden', type !== 'transfer');
 
             const cats = {
                 expense: ['Súper', 'Ocio', 'Transporte', 'Renta', 'Servicios', 'Otros'],
@@ -208,9 +193,7 @@
             };
             catSelect.innerHTML = cats[type].map(c => `<option value="${c.toLowerCase()}">${c}</option>`).join('');
 
-            if (type === 'debt-pay') {
-                methodSelect.innerHTML = `<option value="likeu">Pagar Like U</option><option value="amex">Pagar AMEX</option>`;
-            } else if (type === 'income') {
+            if (type === 'income') {
                 methodSelect.innerHTML = `<option value="nu">A Nu Débito</option><option value="santander">A Santander</option><option value="cash">A Efectivo</option>`;
             } else {
                 methodSelect.innerHTML = `<option value="likeu">Like U</option><option value="amex">AMEX</option><option value="nu">Nu Débito</option><option value="santander">Santander</option><option value="cash">Efectivo</option>`;
@@ -223,13 +206,11 @@
             document.getElementById('bal-nu').innerText = `$${state.nu.toLocaleString()}`;
             document.getElementById('bal-nu-ahorro').innerText = `$${state.nuAhorro.toLocaleString()}`;
             document.getElementById('bal-cash').innerText = `$${state.cash.toLocaleString()}`;
-            
             document.getElementById('debt-likeu').innerText = `$${state.debtLikeU.toLocaleString()}`;
-            document.getElementById('next-likeu').innerText = `Nuevo periodo (Corte día 3): $${state.nextLikeU.toLocaleString()}`;
+            document.getElementById('next-likeu').innerText = `Nuevo periodo: $${state.nextLikeU.toLocaleString()}`;
             document.getElementById('debt-amex').innerText = `$${state.debtAMEX.toLocaleString()}`;
-            document.getElementById('next-amex').innerText = `Nuevo periodo (Corte día 3): $${state.nextAMEX.toLocaleString()}`;
-            
-            document.getElementById('current-date-display').innerText = `Mérida/CDMX: ${timeStr}`;
+            document.getElementById('next-amex').innerText = `Nuevo periodo: $${state.nextAMEX.toLocaleString()}`;
+            document.getElementById('current-date-display').innerText = `Mérida: ${timeStr}`;
 
             const totalNu = state.nu + state.nuAhorro;
             const metaPct = Math.min(100, (totalNu / state.target) * 100).toFixed(1);
@@ -242,11 +223,7 @@
                 const isIncome = t.type === 'income';
                 const color = isIncome ? 'text-emerald-600' : (t.type === 'transfer' ? 'text-blue-500' : 'text-red-500');
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="py-3 px-2 text-[10px] text-gray-400 font-bold uppercase">${t.date}</td>
-                    <td class="py-3 px-2 font-bold text-[10px] text-gray-500 uppercase">${t.methodLabel}</td>
-                    <td class="py-3 px-2 font-medium text-gray-700">${t.concept}</td>
-                    <td class="py-3 px-2 text-right font-bold ${color}">${isIncome ? '+' : '-'} $${t.amount.toLocaleString()}</td>`;
+                row.innerHTML = `<td class="py-3 px-2 text-[10px] text-gray-400 uppercase font-bold">${t.date}</td><td class="py-3 px-2 font-bold text-[10px] text-gray-500 uppercase">${t.methodLabel}</td><td class="py-3 px-2 font-medium text-gray-700">${t.concept}</td><td class="py-3 px-2 text-right font-bold ${color}">${isIncome ? '+' : '-'} $${t.amount.toLocaleString()}</td>`;
                 historyBody.appendChild(row);
             });
         }
@@ -256,43 +233,36 @@
             const { day, timeStr } = getCDMXInfo();
             const type = document.getElementById('type').value;
             const amount = parseFloat(document.getElementById('amount').value);
-            const method = document.getElementById('method').value;
-            const concept = document.getElementById('concept').value;
-            let methodLabel = method.toUpperCase();
+            let methodLabel = "";
 
-            // LÓGICA DE GASTOS Y CORTES
-            if (type === 'expense') {
-                if (method === 'likeu') {
-                    // Si es después del día 3, va a "next", si no, a "debt"
-                    if (day > 3) state.nextLikeU += amount; else state.debtLikeU += amount;
-                } else if (method === 'amex') {
-                    if (day > 3) state.nextAMEX += amount; else state.debtAMEX += amount;
-                } else if (method === 'nu') state.nu -= amount;
-                else if (method === 'santander') state.santander -= amount;
-                else if (method === 'cash') state.cash -= amount;
-
-            } else if (type === 'income') {
-                state[method] += amount;
-
-            } else if (type === 'transfer') {
-                const to = document.getElementById('transfer-to').value;
-                state[method] -= amount;
-                if (to === 'nu-ahorro') state.nuAhorro += amount; else state[to] += amount;
-                methodLabel = `${method} ➔ ${to}`;
-
-            } else if (type === 'debt-pay') {
-                // Seleccionar de donde sale el dinero (Default Santander para pagar tarjetas)
-                const source = confirm("¿Pagar con cuenta de Santander? (Cancelar para usar Nu)") ? 'santander' : 'nu';
+            if (type === 'debt-pay') {
+                const card = document.getElementById('target-card').value;
+                const source = document.getElementById('pay-source').value;
                 state[source] -= amount;
-                if (method === 'likeu') state.debtLikeU -= amount; else state.debtAMEX -= amount;
-                methodLabel = `PAGO ${method.toUpperCase()} (DESDE ${source.toUpperCase()})`;
+                if (card === 'likeu') state.debtLikeU -= amount; else state.debtAMEX -= amount;
+                methodLabel = `PAGO ${card.toUpperCase()} DESDE ${source.toUpperCase()}`;
+            } else if (type === 'expense') {
+                const method = document.getElementById('method').value;
+                if (method === 'likeu') { if (day > 3) state.nextLikeU += amount; else state.debtLikeU += amount; }
+                else if (method === 'amex') { if (day > 3) state.nextAMEX += amount; else state.debtAMEX += amount; }
+                else state[method] -= amount;
+                methodLabel = method.toUpperCase();
+            } else if (type === 'income') {
+                const method = document.getElementById('method').value;
+                state[method] += amount;
+                methodLabel = method.toUpperCase();
+            } else if (type === 'transfer') {
+                const from = document.getElementById('method').value;
+                const to = document.getElementById('transfer-to').value;
+                state[from] -= amount;
+                if (to === 'nu-ahorro') state.nuAhorro += amount; else state[to] += amount;
+                methodLabel = `${from} ➔ ${to}`.toUpperCase();
             }
 
-            state.transactions.push({ type, amount, concept, methodLabel, date: timeStr });
+            state.transactions.push({ type, amount, concept: document.getElementById('concept').value, methodLabel, date: timeStr });
             saveMemory(); updateUI(); e.target.reset(); updateFormLogic();
         });
 
-        // FUNCIONES DE AJUSTE DÍA 4
         function openAdjustmentModal() {
             document.getElementById('adj-likeu').value = state.debtLikeU;
             document.getElementById('adj-amex').value = state.debtAMEX;
@@ -300,11 +270,9 @@
         }
         function closeAdjustmentModal() { document.getElementById('adj-modal').classList.add('hidden'); }
         function saveAdjustment() {
-            state.debtLikeU = parseFloat(document.getElementById('adj-likeu').value);
-            state.debtAMEX = parseFloat(document.getElementById('adj-amex').value);
-            // Al ajustar el día 4, movemos lo que estaba en "Next" a la deuda principal porque ya cortó
-            state.debtLikeU += state.nextLikeU; state.nextLikeU = 0;
-            state.debtAMEX += state.nextAMEX; state.nextAMEX = 0;
+            state.debtLikeU = parseFloat(document.getElementById('adj-likeu').value) + state.nextLikeU;
+            state.debtAMEX = parseFloat(document.getElementById('adj-amex').value) + state.nextAMEX;
+            state.nextLikeU = 0; state.nextAMEX = 0;
             saveMemory(); updateUI(); closeAdjustmentModal();
         }
 
