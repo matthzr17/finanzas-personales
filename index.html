@@ -124,7 +124,7 @@
 
             <!-- COLUMNA CENTRAL: REGISTRO Y GASTOS SEMANALES -->
             <div class="lg:col-span-5 space-y-6">
-                <!-- PRESUPUESTOS SEMANALES -->
+                <!-- MONITOR SEMANAL -->
                 <div class="glass-card p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Monitor Semanal</h3>
@@ -177,8 +177,7 @@
                                 <option value="transfer">Traspaso (⇄)</option>
                                 <option value="debt-pay">Pagar Tarjeta (↘)</option>
                             </select>
-                            <!-- El selector de método se ocultará si es debt-pay -->
-                            <select id="method" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"></select>
+                            <select id="method" onchange="updateTransferDestinations()" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"></select>
                         </div>
 
                         <!-- Opciones específicas de pago de tarjeta -->
@@ -203,10 +202,7 @@
                         <div id="transfer-extra" class="hidden p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                             <label class="text-[9px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Cuenta Destino:</label>
                             <select id="transfer-to" class="w-full p-2.5 rounded-lg border bg-white text-xs font-bold">
-                                <option value="nu-ahorro">Nu Ahorro (Cajita)</option>
-                                <option value="nu">Nu (Débito)</option>
-                                <option value="santander">Santander</option>
-                                <option value="cash">Efectivo</option>
+                                <!-- Dinámico -->
                             </select>
                         </div>
 
@@ -320,16 +316,33 @@
             return { startOfWeek, timeStr: timeFormatter.format(new Date()), currentDay: new Date().getDate() };
         }
 
+        function updateTransferDestinations() {
+            const type = document.getElementById('type').value;
+            if (type !== 'transfer') return;
+
+            const from = document.getElementById('method').value;
+            const destSelect = document.getElementById('transfer-to');
+            
+            const accounts = [
+                { id: 'nuAhorro', label: 'Nu Ahorro (Cajita)' },
+                { id: 'nu', label: 'Nu (Débito)' },
+                { id: 'santander', label: 'Santander' },
+                { id: 'cash', label: 'Efectivo' }
+            ];
+
+            // Filtrar para que el destino no sea igual al origen
+            const filtered = accounts.filter(acc => acc.id !== from);
+            destSelect.innerHTML = filtered.map(acc => `<option value="${acc.id}">${acc.label}</option>`).join('');
+        }
+
         function updateFormLogic() {
             const type = document.getElementById('type').value;
             const methodSelect = document.getElementById('method');
             const formGrid = document.getElementById('form-header-grid');
             
-            // Ocultar/Mostrar bloques específicos
             document.getElementById('debt-pay-options').classList.toggle('hidden', type !== 'debt-pay');
             document.getElementById('transfer-extra').classList.toggle('hidden', type !== 'transfer');
 
-            // AJUSTE: Si es pago de tarjeta, ocultamos el selector de método "derecho"
             if (type === 'debt-pay') {
                 methodSelect.classList.add('hidden');
                 formGrid.classList.remove('grid-cols-2');
@@ -350,6 +363,10 @@
 
             if (type === 'income') {
                 methodSelect.innerHTML = `<option value="nu">A Nu Débito</option><option value="nuAhorro">A Nu Ahorro</option><option value="santander">A Santander</option><option value="cash">A Efectivo</option>`;
+            } else if (type === 'transfer') {
+                // Ajuste: Para traspaso solo permitimos débito como origen
+                methodSelect.innerHTML = `<option value="santander">Desde Santander</option><option value="nu">Desde Nu Débito</option><option value="nuAhorro">Desde Nu Ahorro</option><option value="cash">Desde Efectivo</option>`;
+                updateTransferDestinations();
             } else if (type !== 'debt-pay') {
                 methodSelect.innerHTML = `<option value="likeu">Pagar con Like U</option><option value="amex">Pagar con AMEX</option><option value="nu">Nu Débito</option><option value="santander">Santander</option><option value="cash">Efectivo</option>`;
             }
@@ -452,8 +469,8 @@
                 const from = document.getElementById('method').value;
                 const to = document.getElementById('transfer-to').value;
                 state[from] -= amount;
-                if (to === 'nu-ahorro') state.nuAhorro += amount; else state[to] += amount;
-                methodLabel = `${from}➔${to}`.toUpperCase();
+                state[to] += amount;
+                methodLabel = `${from} ➔ ${to}`.toUpperCase();
             }
 
             state.transactions.push({ type, amount, concept, category, methodLabel, date: timeStr, timestamp: Date.now() });
