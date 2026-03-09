@@ -1,66 +1,492 @@
-<div id="sync-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
-        <h3 class="text-xl font-black text-gray-800 mb-2 uppercase">Ajuste Manual de Caja</h3>
-        <p class="text-xs text-gray-500 mb-6 italic">Escribe el saldo real que ves en tus apps o cartera. El sistema se actualizará exactamente a estos montos.</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas Matthew - Premium Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
-        <div class="grid grid-cols-2 gap-4 h-[400px] overflow-y-auto pr-2">
-            <div class="col-span-2 text-[10px] font-bold text-blue-600 border-b pb-1 uppercase">Cuentas y Efectivo</div>
-            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Santander</label><input type="number" id="sync-santander" class="w-full p-2 border rounded-lg font-bold"></div>
-            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Nu Débito</label><input type="number" id="sync-nu" class="w-full p-2 border rounded-lg font-bold"></div>
-            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Nu Ahorro</label><input type="number" id="sync-ahorro" class="w-full p-2 border rounded-lg font-bold"></div>
-            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Efectivo</label><input type="number" id="sync-cash" class="w-full p-2 border rounded-lg font-bold"></div>
+        body { 
+            background-color: #f8fafc; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: #1e293b;
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 24px; 
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+        }
+
+        .dark-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 24px;
+            color: white;
+        }
+
+        .modal-hidden { display: none !important; }
+        .modal-visible { display: flex !important; backdrop-filter: blur(8px); }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- HEADER -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-600 p-3 rounded-2xl shadow-xl shadow-blue-100">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Matthew <span class="text-blue-600">Wealth</span></h1>
+                    <p id="current-date-display" class="text-slate-500 font-medium text-xs uppercase tracking-tighter italic"></p>
+                </div>
+            </div>
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="openSyncModal()" class="flex-1 md:flex-none bg-white text-slate-900 px-5 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
+                    Sincronizar Datos
+                </button>
+                <button onclick="confirmReset()" class="bg-red-50 text-red-500 p-3 rounded-2xl hover:bg-red-100 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- GRID PRINCIPAL -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <div class="col-span-2 text-[10px] font-bold text-red-600 border-b pb-1 mt-4 uppercase">Like U (TDC)</div>
-            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Deuda Actual</label><input type="number" id="sync-likeu" class="w-full p-2 border border-red-100 rounded-lg font-bold text-red-600"></div>
-            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Nuevo Periodo</label><input type="number" id="sync-next-likeu" class="w-full p-2 border border-red-50 rounded-lg font-bold text-red-400"></div>
+            <!-- COLUMNA IZQUIERDA: SALDOS Y DEUDAS -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- SALDOS DETALLADOS -->
+                <div class="glass-card p-6">
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4">Capital Disponible</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3.5 bg-blue-50/50 rounded-xl border border-blue-100">
+                            <span class="text-xs font-bold text-blue-900">Santander</span>
+                            <span id="bal-santander" class="text-base font-black text-blue-700">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3.5 bg-purple-50/50 rounded-xl border border-purple-100">
+                            <span class="text-xs font-bold text-purple-900">Nu Débito</span>
+                            <span id="bal-nu" class="text-base font-black text-purple-700">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3.5 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                            <span class="text-xs font-bold text-indigo-900">Nu Ahorro</span>
+                            <span id="bal-nu-ahorro" class="text-base font-black text-indigo-700">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                            <span class="text-xs font-bold text-emerald-900">Efectivo</span>
+                            <span id="bal-cash" class="text-base font-black text-emerald-700">$0.00</span>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="col-span-2 text-[10px] font-bold text-red-600 border-b pb-1 mt-4 uppercase">AMEX (TDC)</div>
-            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Deuda Actual</label><input type="number" id="sync-amex" class="w-full p-2 border border-red-100 rounded-lg font-bold text-red-600"></div>
-            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Nuevo Periodo</label><input type="number" id="sync-next-amex" class="w-full p-2 border border-red-50 rounded-lg font-bold text-red-400"></div>
-        </div>
+                <!-- DEUDAS TDC -->
+                <div class="dark-card p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute right-0 top-0 p-4 opacity-10">
+                        <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                    </div>
+                    <h3 class="text-[10px] font-black uppercase text-blue-400 tracking-[0.2em] mb-6">Estado de Créditos</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                                <span>LIKE U</span>
+                                <span class="text-white">TOTAL: <span id="debt-likeu-total">$0</span></span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-white/5 p-2 rounded-lg"><p class="text-[8px] uppercase text-slate-500">Hoy</p><p id="debt-likeu" class="text-sm font-black">$0</p></div>
+                                <div class="bg-white/5 p-2 rounded-lg"><p class="text-[8px] uppercase text-slate-500">Próx.</p><p id="next-likeu" class="text-sm font-black text-blue-300">$0</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                                <span>AMEX</span>
+                                <span class="text-white">TOTAL: <span id="debt-amex-total">$0</span></span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-white/5 p-2 rounded-lg"><p class="text-[8px] uppercase text-slate-500">Hoy</p><p id="debt-amex" class="text-sm font-black">$0</p></div>
+                                <div class="bg-white/5 p-2 rounded-lg"><p class="text-[8px] uppercase text-slate-500">Próx.</p><p id="next-amex" class="text-sm font-black text-blue-300">$0</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="flex gap-3 pt-6">
-            <button onclick="saveSync()" class="flex-1 bg-black text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest">Actualizar Todo</button>
-            <button onclick="closeSyncModal()" class="flex-1 bg-gray-100 text-gray-400 py-3 rounded-xl font-bold text-xs uppercase">Cerrar</button>
+            <!-- COLUMNA CENTRAL: REGISTRO Y GASTOS SEMANALES -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- PRESUPUESTOS SEMANALES -->
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Monitor Semanal</h3>
+                        <div class="flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded-lg">
+                            <div class="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                            <span class="text-[9px] font-black text-blue-600 uppercase">Lunes - Domingo</span>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <!-- Super -->
+                        <div>
+                            <div class="flex justify-between text-[11px] font-bold mb-2">
+                                <span class="text-slate-600 uppercase tracking-tighter">🛒 Súper ($650)</span>
+                                <span id="budget-super-label" class="text-slate-900 font-black">$0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                <div id="budget-super-bar" class="h-full rounded-full transition-all duration-700 bg-blue-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <!-- Ocio -->
+                        <div>
+                            <div class="flex justify-between text-[11px] font-bold mb-2">
+                                <span class="text-slate-600 uppercase tracking-tighter">🍕 Ocio ($750)</span>
+                                <span id="budget-ocio-label" class="text-slate-900 font-black">$0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                <div id="budget-ocio-bar" class="h-full rounded-full transition-all duration-700 bg-purple-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <!-- Transporte -->
+                        <div>
+                            <div class="flex justify-between text-[11px] font-bold mb-2">
+                                <span class="text-slate-600 uppercase tracking-tighter">🚗 Transporte/Gas ($450)</span>
+                                <span id="budget-trans-label" class="text-slate-900 font-black">$0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                <div id="budget-trans-bar" class="h-full rounded-full transition-all duration-700 bg-emerald-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FORMULARIO DE REGISTRO -->
+                <div class="glass-card p-6">
+                    <form id="transaction-form" class="space-y-4">
+                        <div id="form-header-grid" class="grid grid-cols-2 gap-3 transition-all duration-300">
+                            <select id="type" onchange="updateFormLogic()" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                <option value="expense">Gasto (-)</option>
+                                <option value="income">Ingreso (+)</option>
+                                <option value="transfer">Traspaso (⇄)</option>
+                                <option value="debt-pay">Pagar Tarjeta (↘)</option>
+                            </select>
+                            <!-- El selector de método se ocultará si es debt-pay -->
+                            <select id="method" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"></select>
+                        </div>
+
+                        <!-- Opciones específicas de pago de tarjeta -->
+                        <div id="debt-pay-options" class="hidden p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 space-y-3">
+                            <div>
+                                <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block tracking-widest">Tarjeta a Liquidar:</label>
+                                <select id="target-card" class="w-full p-2.5 rounded-lg border bg-white text-xs font-bold">
+                                    <option value="likeu">Pagar Like U</option>
+                                    <option value="amex">Pagar AMEX</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block tracking-widest">Fuente de Pago:</label>
+                                <select id="pay-source" class="w-full p-2.5 rounded-lg border bg-white text-xs font-bold">
+                                    <option value="santander">Desde Santander</option>
+                                    <option value="nu">Desde Nu Débito</option>
+                                    <option value="cash">Desde Efectivo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="transfer-extra" class="hidden p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            <label class="text-[9px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Cuenta Destino:</label>
+                            <select id="transfer-to" class="w-full p-2.5 rounded-lg border bg-white text-xs font-bold">
+                                <option value="nu-ahorro">Nu Ahorro (Cajita)</option>
+                                <option value="nu">Nu (Débito)</option>
+                                <option value="santander">Santander</option>
+                                <option value="cash">Efectivo</option>
+                            </select>
+                        </div>
+
+                        <input type="text" id="concept" placeholder="¿Qué concepto?" class="w-full p-3.5 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500" required>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="relative">
+                                <span class="absolute left-3.5 top-3.5 text-slate-400 font-bold">$</span>
+                                <input type="number" id="amount" step="0.01" placeholder="0.00" class="w-full p-3.5 pl-8 border border-slate-200 rounded-xl text-sm font-black outline-none" required>
+                            </div>
+                            <select id="category" class="p-3.5 border border-slate-200 rounded-xl text-xs font-bold outline-none"></select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] shadow-lg hover:bg-black active:scale-[0.98] transition-all">
+                            Registrar Movimiento
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: META TOTAL Y HISTORIAL -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- META GLOBAL 80K -->
+                <div class="glass-card p-6 border-t-4 border-t-blue-600">
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4">Meta Global $80,000</h3>
+                    <div id="total-capital-display" class="text-3xl font-black text-slate-900 mb-1">$0</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-4">Capital Total Neto</p>
+                    
+                    <div class="flex justify-between items-end mb-2">
+                        <span id="progress-percent" class="text-[10px] font-black text-blue-600">0%</span>
+                        <span class="text-[9px] text-slate-400 font-bold">Faltan: <span id="missing-amount">$0</span></span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        <div id="progress-fill" class="bg-blue-600 h-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- HISTORIAL -->
+                <div class="glass-card p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Movimientos</h3>
+                        <span class="text-[8px] font-bold text-slate-300 uppercase tracking-widest">Últimos 20</span>
+                    </div>
+                    <div id="history-list" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- JS -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    // Actualiza solo estas funciones en tu script:
-    function openSyncModal() {
-        document.getElementById('sync-santander').value = state.santander;
-        document.getElementById('sync-nu').value = state.nu;
-        document.getElementById('sync-ahorro').value = state.nuAhorro;
-        document.getElementById('sync-cash').value = state.cash;
-        document.getElementById('sync-likeu').value = state.debtLikeU;
-        document.getElementById('sync-next-likeu').value = state.nextLikeU;
-        document.getElementById('sync-amex').value = state.debtAMEX;
-        document.getElementById('sync-next-amex').value = state.nextAMEX;
-        document.getElementById('sync-modal').classList.remove('hidden');
-    }
+    <!-- MODAL SYNC -->
+    <div id="sync-modal" class="fixed inset-0 bg-slate-900/60 modal-hidden items-center justify-center p-4 z-[100]">
+        <div class="bg-white rounded-[32px] p-8 w-full max-w-xl shadow-2xl">
+            <h3 class="text-xl font-black text-slate-900 mb-6 uppercase italic tracking-tight">Sincronización Maestra</h3>
+            
+            <div class="grid grid-cols-2 gap-4 h-[400px] overflow-y-auto pr-3 custom-scrollbar">
+                <div class="col-span-2 text-[10px] font-black text-blue-600 bg-blue-50 p-2 rounded-lg uppercase tracking-widest">Cuentas Débito</div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-1">Santander</label><input type="number" id="sync-santander" step="0.01" class="w-full p-3 border rounded-xl font-black text-slate-800"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-1">Nu Débito</label><input type="number" id="sync-nu" step="0.01" class="w-full p-3 border rounded-xl font-black text-slate-800"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-1">Nu Ahorro</label><input type="number" id="sync-ahorro" step="0.01" class="w-full p-3 border rounded-xl font-black text-slate-800"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-1">Efectivo</label><input type="number" id="sync-cash" step="0.01" class="w-full p-3 border rounded-xl font-black text-slate-800"></div>
 
-    function saveSync() {
-        state.santander = parseFloat(document.getElementById('sync-santander').value) || 0;
-        state.nu = parseFloat(document.getElementById('sync-nu').value) || 0;
-        state.nuAhorro = parseFloat(document.getElementById('sync-ahorro').value) || 0;
-        state.cash = parseFloat(document.getElementById('sync-cash').value) || 0;
-        state.debtLikeU = parseFloat(document.getElementById('sync-likeu').value) || 0;
-        state.nextLikeU = parseFloat(document.getElementById('sync-next-likeu').value) || 0;
-        state.debtAMEX = parseFloat(document.getElementById('sync-amex').value) || 0;
-        state.nextAMEX = parseFloat(document.getElementById('sync-next-amex').value) || 0;
-        
-        const { timeStr } = getCDMXInfo();
-        state.transactions.push({ 
-            type: 'income', 
-            amount: 0, 
-            concept: "Ajuste manual de saldos (Sincronización)", 
-            methodLabel: "SISTEMA", 
-            date: timeStr 
+                <div class="col-span-2 text-[10px] font-black text-red-600 bg-red-50 p-2 rounded-lg mt-4 uppercase tracking-widest">Créditos (Deudas)</div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-1">Like U (Hoy)</label><input type="number" id="sync-likeu" step="0.01" class="w-full p-3 border border-red-100 rounded-xl font-black text-red-600"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-1">Like U (Próx)</label><input type="number" id="sync-next-likeu" step="0.01" class="w-full p-3 border border-red-100 rounded-xl font-black text-red-400"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-1">AMEX (Hoy)</label><input type="number" id="sync-amex" step="0.01" class="w-full p-3 border border-red-100 rounded-xl font-black text-red-600"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-1">AMEX (Próx)</label><input type="number" id="sync-next-amex" step="0.01" class="w-full p-3 border border-red-100 rounded-xl font-black text-red-400"></div>
+            </div>
+
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeSyncModal()" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase text-[10px]">Cancelar</button>
+                <button onclick="saveSync()" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] shadow-lg shadow-blue-100">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN INICIAL
+        const initialState = {
+            nu: 7466.48, nuAhorro: 35000, santander: 14753.00, cash: 350.00,
+            debtLikeU: 28455.34, nextLikeU: 0, debtAMEX: 32893.69, nextAMEX: 0,
+            target: 80000, transactions: []
+        };
+
+        const BUDGETS = { super: 650, ocio: 750, transporte: 450 };
+        const MAX_TRANSACTIONS = 20;
+
+        let state = JSON.parse(localStorage.getItem('finanzasMatthew_v3')) || initialState;
+
+        function saveMemory() { 
+            if (state.transactions.length > MAX_TRANSACTIONS) {
+                state.transactions = state.transactions.slice(-MAX_TRANSACTIONS);
+            }
+            localStorage.setItem('finanzasMatthew_v3', JSON.stringify(state)); 
+        }
+
+        function confirmReset() { if(confirm("¿Seguro que quieres borrar todo?")) { localStorage.clear(); location.reload(); } }
+
+        function getCDMXInfo() {
+            const now = new Date();
+            const timeFormatter = new Intl.DateTimeFormat('es-MX', { 
+                timeZone: 'America/Mexico_City', 
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false 
+            });
+            
+            const day = now.getDay(); 
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1); 
+            const startOfWeek = new Date(now.setDate(diff)).setHours(0,0,0,0);
+            
+            return { startOfWeek, timeStr: timeFormatter.format(new Date()), currentDay: new Date().getDate() };
+        }
+
+        function updateFormLogic() {
+            const type = document.getElementById('type').value;
+            const methodSelect = document.getElementById('method');
+            const formGrid = document.getElementById('form-header-grid');
+            
+            // Ocultar/Mostrar bloques específicos
+            document.getElementById('debt-pay-options').classList.toggle('hidden', type !== 'debt-pay');
+            document.getElementById('transfer-extra').classList.toggle('hidden', type !== 'transfer');
+
+            // AJUSTE: Si es pago de tarjeta, ocultamos el selector de método "derecho"
+            if (type === 'debt-pay') {
+                methodSelect.classList.add('hidden');
+                formGrid.classList.remove('grid-cols-2');
+                formGrid.classList.add('grid-cols-1');
+            } else {
+                methodSelect.classList.remove('hidden');
+                formGrid.classList.remove('grid-cols-1');
+                formGrid.classList.add('grid-cols-2');
+            }
+
+            const cats = {
+                expense: ['Súper', 'Ocio', 'Transporte', 'Renta', 'Suscripciones', 'Otros'],
+                income: ['Sueldo', 'Freelance', 'Otros'],
+                transfer: ['Movimiento Interno'],
+                'debt-pay': ['Abono a Deuda']
+            };
+            document.getElementById('category').innerHTML = cats[type].map(c => `<option value="${c}">${c}</option>`).join('');
+
+            if (type === 'income') {
+                methodSelect.innerHTML = `<option value="nu">A Nu Débito</option><option value="nuAhorro">A Nu Ahorro</option><option value="santander">A Santander</option><option value="cash">A Efectivo</option>`;
+            } else if (type !== 'debt-pay') {
+                methodSelect.innerHTML = `<option value="likeu">Pagar con Like U</option><option value="amex">Pagar con AMEX</option><option value="nu">Nu Débito</option><option value="santander">Santander</option><option value="cash">Efectivo</option>`;
+            }
+        }
+
+        function updateUI() {
+            const { timeStr, startOfWeek } = getCDMXInfo();
+            const fmt = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+            document.getElementById('bal-santander').innerText = `$${fmt(state.santander)}`;
+            document.getElementById('bal-nu').innerText = `$${fmt(state.nu)}`;
+            document.getElementById('bal-nu-ahorro').innerText = `$${fmt(state.nuAhorro)}`;
+            document.getElementById('bal-cash').innerText = `$${fmt(state.cash)}`;
+
+            document.getElementById('debt-likeu').innerText = `$${fmt(state.debtLikeU)}`;
+            document.getElementById('next-likeu').innerText = `$${fmt(state.nextLikeU)}`;
+            document.getElementById('debt-likeu-total').innerText = `$${fmt(state.debtLikeU + state.nextLikeU)}`;
+            
+            document.getElementById('debt-amex').innerText = `$${fmt(state.debtAMEX)}`;
+            document.getElementById('next-amex').innerText = `$${fmt(state.nextAMEX)}`;
+            document.getElementById('debt-amex-total').innerText = `$${fmt(state.debtAMEX + state.nextAMEX)}`;
+
+            document.getElementById('current-date-display').innerText = `${timeStr}`;
+
+            const totalCapital = state.nu + state.nuAhorro + state.santander + state.cash;
+            const metaPct = Math.min(100, (totalCapital / state.target) * 100).toFixed(1);
+            const missing = Math.max(0, state.target - totalCapital);
+
+            document.getElementById('total-capital-display').innerText = `$${fmt(totalCapital)}`;
+            document.getElementById('progress-fill').style.width = `${metaPct}%`;
+            document.getElementById('progress-percent').innerText = `${metaPct}%`;
+            document.getElementById('missing-amount').innerText = `$${fmt(missing)}`;
+
+            const weekTxs = state.transactions.filter(t => new Date(t.timestamp) >= startOfWeek && t.type === 'expense');
+            const spent = { Súper: 0, Ocio: 0, Transporte: 0 };
+            weekTxs.forEach(t => { if(spent[t.category] !== undefined) spent[t.category] += t.amount; });
+
+            const updateBudget = (id, current, limit) => {
+                const pct = Math.min(100, (current / limit) * 100);
+                document.getElementById(`budget-${id}-bar`).style.width = `${pct}%`;
+                document.getElementById(`budget-${id}-label`).innerText = `$${current.toFixed(0)} / $${limit}`;
+                
+                let colorClass = pct > 100 ? 'bg-red-600' : pct > 85 ? 'bg-orange-400' : (id === 'super' ? 'bg-blue-500' : id === 'ocio' ? 'bg-purple-500' : 'bg-emerald-500');
+                document.getElementById(`budget-${id}-bar`).className = `h-full rounded-full transition-all duration-700 ${colorClass}`;
+            };
+
+            updateBudget('super', spent.Súper, BUDGETS.super);
+            updateBudget('ocio', spent.Ocio, BUDGETS.ocio);
+            updateBudget('trans', spent.Transporte, BUDGETS.transporte);
+
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            state.transactions.slice().reverse().forEach(t => {
+                const isPos = t.type === 'income' || (t.type === 'transfer' && t.methodLabel.includes('➔'));
+                
+                list.innerHTML += `
+                    <div class="flex justify-between items-center p-3 border-b border-slate-50 hover:bg-slate-50/50 rounded-xl transition-all">
+                        <div class="flex gap-3 items-center">
+                            <div class="p-2 rounded-lg bg-slate-100 text-[10px]">${t.type === 'expense' ? '💸' : t.type === 'income' ? '💰' : t.type === 'transfer' ? '🔁' : '↘️'}</div>
+                            <div>
+                                <div class="text-[11px] font-black text-slate-800 leading-none mb-1">${t.concept}</div>
+                                <div class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">${t.methodLabel} • ${t.category}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-black ${isPos ? 'text-emerald-500' : 'text-red-500'}">${isPos ? '+' : '-'} $${fmt(t.amount)}</div>
+                            <div class="text-[8px] font-bold text-slate-300">${t.date}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('transaction-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const { currentDay, timeStr } = getCDMXInfo();
+            const type = document.getElementById('type').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+            const concept = document.getElementById('concept').value;
+            let methodLabel = "";
+
+            if (type === 'debt-pay') {
+                const card = document.getElementById('target-card').value;
+                const source = document.getElementById('pay-source').value;
+                state[source] -= amount;
+                if (card === 'likeu') state.debtLikeU -= amount; else state.debtAMEX -= amount;
+                methodLabel = `${source} ➔ ${card.toUpperCase()}`;
+            } else if (type === 'expense') {
+                const method = document.getElementById('method').value;
+                if (method === 'likeu') { if (currentDay > 3) state.nextLikeU += amount; else state.debtLikeU += amount; }
+                else if (method === 'amex') { if (currentDay > 3) state.nextAMEX += amount; else state.debtAMEX += amount; }
+                else state[method] -= amount;
+                methodLabel = method.toUpperCase();
+            } else if (type === 'income') {
+                const method = document.getElementById('method').value;
+                state[method] += amount;
+                methodLabel = method.toUpperCase();
+            } else if (type === 'transfer') {
+                const from = document.getElementById('method').value;
+                const to = document.getElementById('transfer-to').value;
+                state[from] -= amount;
+                if (to === 'nu-ahorro') state.nuAhorro += amount; else state[to] += amount;
+                methodLabel = `${from}➔${to}`.toUpperCase();
+            }
+
+            state.transactions.push({ type, amount, concept, category, methodLabel, date: timeStr, timestamp: Date.now() });
+            saveMemory(); updateUI(); e.target.reset(); updateFormLogic();
         });
-        
-        saveMemory(); 
-        updateUI(); 
-        closeSyncModal();
-    }
-</script>
+
+        function openSyncModal() {
+            document.getElementById('sync-santander').value = state.santander;
+            document.getElementById('sync-nu').value = state.nu;
+            document.getElementById('sync-ahorro').value = state.nuAhorro;
+            document.getElementById('sync-cash').value = state.cash;
+            document.getElementById('sync-likeu').value = state.debtLikeU;
+            document.getElementById('sync-next-likeu').value = state.nextLikeU;
+            document.getElementById('sync-amex').value = state.debtAMEX;
+            document.getElementById('sync-next-amex').value = state.nextAMEX;
+            document.getElementById('sync-modal').classList.replace('modal-hidden', 'modal-visible');
+        }
+
+        function closeSyncModal() { document.getElementById('sync-modal').classList.replace('modal-visible', 'modal-hidden'); }
+
+        function saveSync() {
+            state.santander = parseFloat(document.getElementById('sync-santander').value) || 0;
+            state.nu = parseFloat(document.getElementById('sync-nu').value) || 0;
+            state.nuAhorro = parseFloat(document.getElementById('sync-ahorro').value) || 0;
+            state.cash = parseFloat(document.getElementById('sync-cash').value) || 0;
+            state.debtLikeU = parseFloat(document.getElementById('sync-likeu').value) || 0;
+            state.nextLikeU = parseFloat(document.getElementById('sync-next-likeu').value) || 0;
+            state.debtAMEX = parseFloat(document.getElementById('sync-amex').value) || 0;
+            state.nextAMEX = parseFloat(document.getElementById('sync-next-amex').value) || 0;
+            saveMemory(); updateUI(); closeSyncModal();
+        }
+
+        updateFormLogic(); updateUI();
+    </script>
+</body>
+</html>
