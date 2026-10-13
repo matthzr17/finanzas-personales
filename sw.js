@@ -1,6 +1,6 @@
 // Service worker: permite abrir la app sin conexión y cargarla rápido.
 // Cambia VERSION cada vez que publiques cambios para forzar la actualización.
-const VERSION = 'mf-v2.0.0';
+const VERSION = 'mf-v2.0.1';
 const SHELL = [
   './', './index.html', './css/styles.css', './js/config.js', './js/store.js', './js/app.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'

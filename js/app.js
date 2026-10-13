@@ -788,11 +788,6 @@ function vAjustes() {
     <h3>Notificaciones</h3>
     <p class="hint">Cada lunes a las 9:00 am te avisamos cómo cerraste la semana y cuánto apartar.</p>
     ${notif}
-  </div>
-  <div class="card">
-    <h3>Respaldo por correo</h3>
-    <p class="hint">Cada domingo a las 8:00 pm se envía tu respaldo completo (.json) a ${esc(ui.session?.user?.email || 'tu correo')}.</p>
-    <label class="check"><input type="checkbox" data-change="respaldo-correo" ${AJ.respaldo_correo === false ? '' : 'checked'}> Enviar respaldo semanal</label>
   </div>`;
 }
 
