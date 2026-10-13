@@ -391,3 +391,104 @@ h1, h2, h3, h4 { margin: 0; letter-spacing: -.01em; }
 #toast.ok { background: var(--pos); color: #fff; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ===================== v2 ===================== */
+:root { --ser-ing: #2a78d6; --ser-gas: #eb6834; }
+@media (prefers-color-scheme: dark) { :root { --ser-ing: #3987e5; --ser-gas: #d95926; } }
+
+.hero-link { display: flex; flex-direction: column; text-align: left; color: inherit; }
+.hero-link span { font-size: 12px; opacity: .75; }
+.hero-link b { font-size: 15px; }
+.link.inline { padding: 8px 0; margin: -8px 0; font-size: inherit; }
+.link-row { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 14px; margin: -4px 0 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; font-weight: 600; font-size: 15px; }
+.big-line { font-size: 24px; font-weight: 800; margin: 2px 0; letter-spacing: -.02em; }
+.big-line small { font-size: 14px; font-weight: 500; }
+.mt { margin-top: 12px; }
+
+/* semana */
+.semana-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+.semana-top small { display: block; font-size: 12.5px; color: var(--muted); }
+.semana-top b { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+.semana-top .right { text-align: right; }
+.semana-top .right b { font-size: 18px; }
+.semana-cats { margin-top: 10px; border-top: 1px solid var(--line); }
+.cat-row.slim { padding: 6px 0; }
+
+/* consultor */
+.tip { display: flex; gap: 12px; padding: 12px; border-radius: 14px; background: var(--surface-2); margin-bottom: 8px; border-left: 4px solid var(--line); }
+.card .tip:last-child { margin-bottom: 0; }
+.tip.warn { border-left-color: var(--warn); }
+.tip.bad { border-left-color: var(--neg); }
+.tip.ok { border-left-color: var(--pos); }
+.tip-ic { font-size: 22px; line-height: 1.2; flex: none; }
+.tip b { display: block; font-size: 15px; }
+.tip p { margin: 3px 0 0; font-size: 13.5px; color: var(--muted); }
+.v-consejos .tip { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px; }
+
+/* aviso flotante del lunes */
+.float-card {
+  position: fixed; left: 50%; transform: translateX(-50%); z-index: 20;
+  bottom: calc(84px + env(safe-area-inset-bottom)); width: min(528px, calc(100% - 24px));
+  display: flex; gap: 12px; padding: 14px 40px 14px 14px; border-radius: 18px;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: 0 12px 36px rgba(0, 0, 0, .22);
+  animation: subir .3s cubic-bezier(.2, .8, .2, 1);
+}
+.float-card.ok { border-top: 4px solid var(--pos); }
+.float-card.bad { border-top: 4px solid var(--neg); }
+.float-ic { font-size: 28px; flex: none; }
+.float-body b { font-size: 16px; }
+.float-body p { margin: 4px 0 10px; font-size: 14px; color: var(--muted); }
+.float-body p b { font-size: 14px; color: var(--ink); }
+.float-x { position: absolute; top: 6px; right: 6px; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 16px; color: var(--muted); }
+@keyframes subir { from { opacity: 0; transform: translate(-50%, 20px); } }
+.v-inicio { padding-bottom: 8px; }
+
+/* reportes */
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.kpis .stat b { font-size: 18px; }
+.kpis .stat small { display: block; font-size: 12px; margin-top: 2px; }
+.legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.legend span, .chart-tip span { display: inline-flex; align-items: center; gap: 6px; }
+.sw-ing, .sw-gas { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.sw-ing { background: var(--ser-ing); }
+.sw-gas { background: var(--ser-gas); }
+.chart-wrap { position: relative; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart .axis { stroke: var(--line); stroke-width: 1; }
+.chart text { font-size: 11px; fill: var(--muted); }
+.chart .col.sel text { fill: var(--ink); font-weight: 700; }
+.chart .b-ing { fill: var(--ser-ing); }
+.chart .b-gas { fill: var(--ser-gas); }
+.chart .hit { fill: transparent; cursor: pointer; }
+.chart .col.on .hit { fill: color-mix(in srgb, var(--ink) 6%, transparent); }
+.chart-tip { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: 13px; }
+.chart-tip b { width: 100%; }
+.chart-tip[hidden] { display: none; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 700; padding: 0 0 6px; }
+.tbl th:not(:first-child), .tbl td:not(:first-child) { text-align: right; white-space: nowrap; padding-left: 8px; }
+.tbl td { padding: 8px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.tbl .cat-ic { width: auto; margin-right: 6px; }
+.mini-bar { height: 4px; border-radius: 9px; background: color-mix(in srgb, var(--ink) 7%, transparent); margin-top: 5px; overflow: hidden; }
+.mini-bar span { display: block; height: 100%; border-radius: 9px; }
+.week-row { display: grid; grid-template-columns: 1fr auto auto; grid-template-rows: auto auto; column-gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.week-row:first-of-type { border-top: 0; }
+.week-row b { text-align: right; }
+.week-row small { grid-column: 3; text-align: right; font-size: 12px; }
+
+/* por cobrar */
+.cobro-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.cobro-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cobro-main small { font-size: 12.5px; color: var(--muted); }
+.btn.wa { margin-top: 10px; width: 100%; text-decoration: none; color: #fff; background: #1f9d55; border-color: #1f9d55; }
+
+/* gastos fijos */
+.card.flush { padding: 4px 12px; }
+.rec-row { padding: 10px 0; }
+.rec-row + .rec-row { border-top: 1px solid var(--line); }
+.rec-main { display: flex; align-items: center; gap: 12px; width: 100%; }
+.rec-btns { display: flex; gap: 8px; margin: 8px 0 0 50px; }
+.form:not(.is-ingreso) .only-ingreso { display: none; }
+.form-plain { display: grid; gap: 10px; }
+.form-plain h3 { margin-bottom: -4px; }

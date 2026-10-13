@@ -14,7 +14,15 @@ Se aloja gratis en **GitHub Pages** y guarda los datos en **Supabase**.
 | **Deudas** | Préstamos que debes o que te deben, con abonos, avance y fecha límite. Se marcan como saldadas solas al llegar a $0. |
 | **Metas** | Ligadas a una o varias cuentas (avance = suma de sus saldos) o por aportaciones. Calcula cuánto ahorrar al mes para llegar a la fecha. |
 | **Categorías** | Personalizables, con ícono, color y presupuesto mensual. Inicio avisa cuando te acercas al límite o lo rebasas. |
-| **Respaldo** | Exporta los movimientos a Excel (.csv) y un respaldo completo (.json) que se puede volver a importar. |
+| **Respaldo** | Exporta los movimientos a Excel (.csv) y un respaldo completo (.json) que se puede volver a importar. Cada domingo se envía por correo. |
+| **Presupuesto semanal** | De lunes a domingo, total y por categoría. Inicio muestra cuánto queda y cuánto puedes gastar al día. |
+| **Aviso del lunes** | Notificación y mensaje flotante con el cierre de la semana anterior y el monto a apartar en cualquier cuenta de tipo Ahorro. |
+| **Por cobrar** | Personas que te deben, agrupadas, con recordatorio por WhatsApp. |
+| **Meses sin intereses** | Compras a MSI: al estado de cuenta solo entra la mensualidad de cada corte. |
+| **Gastos fijos** | Renta, servicios, suscripciones e ingresos fijos; se registran o se omiten con un toque. |
+| **Dividir gasto** | Registra tu parte como gasto y la de los demás como cuentas por cobrar. |
+| **Consultor** | Consejos con reglas sobre tus propios datos (ritmo semanal, gastos hormiga, tarjetas, fondo de emergencia, inversión). |
+| **Reportes** | Mes contra mes, gráfica de 6 meses, categorías, gastos mayores e historial de semanas. |
 
 Los saldos **no se guardan**: se calculan a partir del saldo inicial y los movimientos. Si editas o borras un movimiento, todo se recalcula.
 
@@ -29,7 +37,10 @@ js/app.js               lógica y pantallas
 sw.js                   funcionamiento sin conexión
 manifest.webmanifest    datos para instalar como app
 icons/                  íconos
-supabase/schema.sql     tablas + seguridad (RLS)
+supabase/schema.sql             tablas + seguridad (RLS)
+supabase/migracion_v2.sql       presupuesto semanal, por cobrar, MSI, gastos fijos, ajustes, push
+supabase/tareas_programadas.sql aviso de los lunes y respaldo de los domingos (pg_cron)
+supabase/functions/             Edge Function que envía notificaciones y correos
 ```
 
 Si `js/config.js` está vacío, la app funciona en **modo demo** (los datos quedan solo en ese navegador). Sirve para probarla antes de conectar Supabase.

@@ -2,16 +2,19 @@
 (() => {
   'use strict';
 
-  const TABLES = ['cuentas', 'categorias', 'deudas', 'metas', 'movimientos'];
+  const TABLES = ['cuentas', 'categorias', 'deudas', 'metas', 'recurrentes', 'movimientos'];
   const COLS = {
     cuentas: ['id', 'nombre', 'tipo', 'banco', 'saldo_inicial', 'limite_credito', 'dia_corte', 'dia_pago', 'color', 'orden', 'archivada', 'creado'],
-    categorias: ['id', 'nombre', 'tipo', 'icono', 'color', 'presupuesto_mensual', 'archivada', 'creado'],
-    deudas: ['id', 'nombre', 'persona', 'direccion', 'monto', 'fecha_inicio', 'fecha_limite', 'notas', 'saldada', 'creado'],
+    categorias: ['id', 'nombre', 'tipo', 'icono', 'color', 'presupuesto_mensual', 'presupuesto_semanal', 'archivada', 'creado'],
+    deudas: ['id', 'nombre', 'persona', 'direccion', 'monto', 'fecha_inicio', 'fecha_limite', 'notas', 'telefono', 'saldada', 'creado'],
     metas: ['id', 'nombre', 'monto_objetivo', 'ahorrado_inicial', 'fecha_objetivo', 'cuenta_ids', 'color', 'completada', 'creado'],
-    movimientos: ['id', 'fecha', 'tipo', 'monto', 'cuenta_id', 'cuenta_destino_id', 'categoria_id', 'deuda_id', 'meta_id', 'nota', 'creado']
+    recurrentes: ['id', 'nombre', 'tipo', 'monto', 'categoria_id', 'cuenta_id', 'frecuencia', 'proxima', 'es_suscripcion', 'activo', 'creado'],
+    movimientos: ['id', 'fecha', 'tipo', 'monto', 'cuenta_id', 'cuenta_destino_id', 'categoria_id', 'deuda_id', 'meta_id', 'recurrente_id', 'msi_meses', 'nota', 'creado'],
+    ajustes: ['presupuesto_semanal', 'cuenta_ahorro_id', 'semana_revisada', 'respaldo_correo'],
+    push_subs: ['endpoint', 'p256dh', 'auth']
   };
   // Orden seguro para insertar (padres antes que hijos) y borrar (al revés)
-  const INSERT_ORDER = ['cuentas', 'categorias', 'deudas', 'metas', 'movimientos'];
+  const INSERT_ORDER = ['cuentas', 'categorias', 'deudas', 'metas', 'recurrentes', 'movimientos'];
 
   const pick = (t, row) => {
     const out = {};
@@ -26,11 +29,11 @@
 
   // ---------- modo demo (localStorage) ----------
   const LKEY = 'misfinanzas_demo_v1';
-  const emptyDb = () => Object.fromEntries(TABLES.map(t => [t, []]));
+  const emptyDb = () => ({ ...Object.fromEntries(TABLES.map(t => [t, []])), ajustes: {} });
   let local = emptyDb();
   try {
     const saved = JSON.parse(localStorage.getItem(LKEY) || 'null');
-    if (saved) TABLES.forEach(t => { local[t] = Array.isArray(saved[t]) ? saved[t] : []; });
+    if (saved) { TABLES.forEach(t => { local[t] = Array.isArray(saved[t]) ? saved[t] : []; }); local.ajustes = saved.ajustes || {}; }
   } catch (e) { /* almacenamiento no disponible: se usa memoria */ }
   const saveLocal = () => { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) { console.warn('No se pudo guardar', e); } };
   const newId = () => (crypto.randomUUID ? crypto.randomUUID()
@@ -118,11 +121,34 @@
       check(await sb.from(t).delete().eq('id', id));
     },
 
+    async getAjustes() {
+      if (!remote) return clone(local.ajustes || {});
+      const { data, error } = await sb.from('ajustes').select('*').maybeSingle();
+      if (error) throw new Error(traducir(error.message));
+      return data || {};
+    },
+    async saveAjustes(patch) {
+      const p = pick('ajustes', patch);
+      if (!remote) { local.ajustes = { ...local.ajustes, ...p }; saveLocal(); return clone(local.ajustes); }
+      return check(await sb.from('ajustes').upsert({ ...p, actualizado: new Date().toISOString() }, { onConflict: 'user_id' }).select().single());
+    },
+    async savePushSub(sub) {
+      if (!remote) throw new Error('Las notificaciones requieren la versión conectada a Supabase');
+      check(await sb.from('push_subs').upsert(pick('push_subs', sub), { onConflict: 'endpoint' }));
+    },
+    async invoke(name, body) {
+      if (!remote) throw new Error('Disponible solo en la versión conectada a Supabase');
+      const { data, error } = await sb.functions.invoke(name, { body });
+      if (error) throw new Error(traducir(error.message));
+      return data;
+    },
+
     // Reemplaza TODOS los datos del usuario por los de un respaldo
     async replaceAll(data) {
       if (!remote) {
         local = emptyDb();
         TABLES.forEach(t => { local[t] = (data[t] || []).map(r => ({ id: newId(), creado: new Date().toISOString(), ...pick(t, r) })); });
+        local.ajustes = pick('ajustes', data.ajustes || {});
         saveLocal(); return;
       }
       for (const t of [...INSERT_ORDER].reverse()) check(await sb.from(t).delete().not('id', 'is', null));
@@ -130,6 +156,7 @@
         const rows = data[t] || [];
         for (let i = 0; i < rows.length; i += 500) check(await sb.from(t).insert(rows.slice(i, i + 500).map(r => pick(t, r))));
       }
+      if (data.ajustes) check(await sb.from('ajustes').upsert(pick('ajustes', data.ajustes), { onConflict: 'user_id' }));
     },
 
     resetDemo() { local = emptyDb(); saveLocal(); }

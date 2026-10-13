@@ -7,5 +7,7 @@
 // NUNCA pongas aquí la llave "service_role" / "secret".
 window.APP_CONFIG = {
   SUPABASE_URL: 'https://enmqirfghjdxpkdqxnvz.supabase.co',
-  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVubXFpcmZnaGpkeHBrZHF4bnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MzY4NTUsImV4cCI6MjEwNzQxMjg1NX0.zfoNRI7_dGq3HRoHQRgTpOWIbb0M71k2ufvK1mDHmcw'
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVubXFpcmZnaGpkeHBrZHF4bnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MzY4NTUsImV4cCI6MjEwNzQxMjg1NX0.zfoNRI7_dGq3HRoHQRgTpOWIbb0M71k2ufvK1mDHmcw',
+  // Llave pública para notificaciones push (la privada vive solo en Supabase)
+  VAPID_PUBLIC_KEY: 'BLgowBsh7__Sjnq7eaH1LegrWywsIXNIQJ-MjRPMuGOEJL7GGi4TX1mAsyhcRmDGhUxZElLtiwEZHkm25Tt8Kc8'
 };
