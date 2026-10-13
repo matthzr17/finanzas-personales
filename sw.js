@@ -1,6 +1,6 @@
 // Service worker: permite abrir la app sin conexión y cargarla rápido.
 // Cambia VERSION cada vez que publiques cambios para forzar la actualización.
-const VERSION = 'mf-v1.0.0';
+const VERSION = 'mf-v1.1.0';
 const SHELL = [
   './', './index.html', './css/styles.css', './js/config.js', './js/store.js', './js/app.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'
@@ -35,9 +35,9 @@ self.addEventListener('fetch', e => {
 
   // Archivos de la app: primero red (para ver cambios), caché si no hay conexión
   if (url.origin === self.location.origin) {
-    e.respondWith(fetch(req).then(res => {
+    e.respondWith(fetch(req, { cache: 'no-cache' }).then(res => {
       const copy = res.clone();
-      caches.open(VERSION).then(c => c.put(req, copy));
+      if (res.ok) caches.open(VERSION).then(c => c.put(req, copy));
       return res;
     }).catch(() => caches.match(req).then(hit => hit || caches.match('./index.html'))));
   }

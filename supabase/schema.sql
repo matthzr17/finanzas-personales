@@ -159,3 +159,9 @@ revoke execute on function public.bloquear_registros() from public, anon, authen
 drop trigger if exists bloquear_registros on auth.users;
 create trigger bloquear_registros before insert on auth.users
   for each row execute function public.bloquear_registros();
+
+-- ---------- Permisos de la API ----------
+-- Los proyectos nuevos de Supabase ya no dan acceso automático a las tablas nuevas.
+-- Sin esto la app muestra "permission denied for table ...".
+grant usage on schema public to authenticated, service_role;
+grant select, insert, update, delete on public.cuentas, public.categorias, public.deudas, public.metas, public.movimientos to authenticated, service_role;

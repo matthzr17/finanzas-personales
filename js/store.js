@@ -37,7 +37,17 @@
     : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }));
   const clone = v => JSON.parse(JSON.stringify(v));
 
-  const check = ({ data, error }) => { if (error) throw new Error(error.message); return data; };
+  const traducir = msg => {
+    const m = String(msg || '');
+    if (/permission denied/i.test(m)) return 'La base de datos rechazó el permiso. Avísale al administrador.';
+    if (/row-level security/i.test(m)) return 'No tienes permiso para guardar este dato.';
+    if (/JWT|token/i.test(m)) return 'Tu sesión expiró. Vuelve a iniciar sesión.';
+    if (/Failed to fetch|NetworkError|Load failed|network/i.test(m)) return 'Sin conexión. Revisa tu internet e inténtalo de nuevo.';
+    if (/violates foreign key/i.test(m)) return 'Este registro está en uso por otros movimientos.';
+    if (/violates check constraint/i.test(m)) return 'Algún dato no es válido. Revisa los campos.';
+    return m;
+  };
+  const check = ({ data, error }) => { if (error) throw new Error(traducir(error.message)); return data; };
 
   window.Store = {
     TABLES,
@@ -55,7 +65,7 @@
     },
     async signIn(email, password) {
       const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) throw new Error(error.message === 'Invalid login credentials' ? 'Correo o contraseña incorrectos' : error.message);
+      if (error) throw new Error(error.message === 'Invalid login credentials' ? 'Correo o contraseña incorrectos' : traducir(error.message));
     },
     async signOut() { if (remote) await sb.auth.signOut(); },
 

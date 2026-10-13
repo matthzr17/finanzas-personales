@@ -8,7 +8,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtMXN = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 const money = n => { const v = Number(n) || 0; return fmtMXN.format(Math.abs(v) < 0.005 ? 0 : v); };
-const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.\-]/g, '')); return Number.isFinite(n) ? n : 0; };
+const num = v => { const n = parseFloat(String(v ?? '').replace(/[−–]/g, '-').replace(/[^0-9.\-]/g, '')); return Number.isFinite(n) ? n : 0; };
 const round2 = n => Math.round(n * 100) / 100;
 const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -41,7 +41,7 @@ function toast(msg, kind = '') {
   t.textContent = msg;
   t.className = 'show ' + kind;
   clearTimeout(toastT);
-  toastT = setTimeout(() => { t.className = ''; }, 2800);
+  toastT = setTimeout(() => { t.className = ''; }, kind === 'err' ? 5000 : 2600);
 }
 
 /* =====================================================================
@@ -50,7 +50,7 @@ function toast(msg, kind = '') {
 const TABLES = Store.TABLES;
 const S = { cuentas: [], categorias: [], deudas: [], metas: [], movimientos: [] };
 let C = { saldo: new Map(), abonado: new Map(), aportado: new Map() };
-const ui = { view: 'inicio', mes: hoy().slice(0, 7), filtroTipo: 'todos', filtroCuenta: '', session: null, loading: true, lastLoad: 0 };
+const ui = { view: 'inicio', mes: hoy().slice(0, 7), filtroTipo: 'todos', filtroCuenta: '', session: null, loading: true, lastLoad: 0, error: null };
 
 const TIPOS_CUENTA = { debito: 'Débito', credito: 'Tarjeta de crédito', ahorro: 'Ahorro', efectivo: 'Efectivo', inversion: 'Inversión', otro: 'Otro' };
 const ORDEN_TIPOS = ['debito', 'ahorro', 'efectivo', 'inversion', 'credito', 'otro'];
@@ -479,7 +479,7 @@ function vMas() {
     : `<div class="list-item static"><span class="li-ic">🧪</span><span class="li-main"><b>Modo demo</b><small>Los datos viven solo en este navegador. Conecta Supabase en js/config.js para guardarlos en la nube.</small></span></div>
        <button class="list-item" data-act="reset-demo"><span class="li-ic">🗑️</span><span class="li-main"><b>Borrar datos demo</b><small>Empezar de cero</small></span></button>`}
   </div>
-  <p class="hint center">Mis Finanzas · v1.0</p>`;
+  <p class="hint center">Mis Finanzas · v1.1</p>`;
 }
 
 function vMetas() {
@@ -629,7 +629,8 @@ function render() {
   const banner = Store.configuredButOffline
     ? '<div class="banner warn">Sin conexión a Supabase: no se pudo cargar la librería. Revisa tu internet.</div>'
     : (!Store.remote ? '<div class="banner">Modo demo · datos solo en este navegador</div>' : '');
-  app.innerHTML = banner + header() + `<main class="view v-${ui.view}">${VIEWS[ui.view]()}</main>` + tabbar();
+  const errBanner = ui.error ? `<div class="banner err"><span>No se pudieron cargar tus datos: ${esc(ui.error)}</span><button class="btn sm" data-act="retry">Reintentar</button></div>` : '';
+  app.innerHTML = banner + errBanner + header() + `<main class="view v-${ui.view}">${VIEWS[ui.view]()}</main>` + tabbar();
   lastView = ui.view;
   window.scrollTo(0, keep);
 }
@@ -648,7 +649,22 @@ function openSheet(title, body) {
     </div>`;
   document.body.classList.add('no-scroll');
   requestAnimationFrame(() => root.classList.add('open'));
-  return $('.sheet', root);
+  const sheet = $('.sheet', root);
+  habilitarDeslizar(sheet);
+  return sheet;
+}
+function habilitarDeslizar(sheet) {
+  let y0 = null;
+  let dy = 0;
+  const zona = e => e.target.closest('.sheet-handle, .sheet-head') || sheet.scrollTop <= 0 && e.target.closest('.sheet-head');
+  sheet.addEventListener('touchstart', e => { if (zona(e)) { y0 = e.touches[0].clientY; dy = 0; sheet.style.transition = 'none'; } }, { passive: true });
+  sheet.addEventListener('touchmove', e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  sheet.addEventListener('touchend', () => {
+    if (y0 === null) return;
+    sheet.style.transition = '';
+    if (dy > 90) closeSheet(); else sheet.style.transform = '';
+    y0 = null;
+  });
 }
 function closeSheet() {
   const root = sheetRoot();
@@ -712,7 +728,7 @@ function abrirMov(mov = null, preset = {}) {
   const leer = () => { const form = $('form', host); if (form) for (const [k, v] of new FormData(form)) f[k] = v; };
   const draw = () => { host.innerHTML = movFormHtml(f, !!mov); };
   draw();
-  if (!mov) setTimeout(() => $('[name=monto]', host)?.focus(), 260);
+  if (!mov) $('[name=monto]', host)?.focus({ preventScroll: true });
 
   host.addEventListener('click', async e => {
     const seg = e.target.closest('[data-seg]');
@@ -837,7 +853,7 @@ function movFormHtml(f, editando) {
   const montoVal = f.monto === '' || f.monto === null || f.monto === undefined ? '' : esc(f.monto);
   return `<form class="form" novalidate>
     ${fijo ? `<p class="hint fixed-type">${fijo}</p>` : `<div class="seg mov-seg">${segs.map(([k, l]) => `<button type="button" class="${f.tipo === k ? 'on' : ''}" data-seg="${k}">${l}</button>`).join('')}</div>`}
-    <label class="amount t-${f.tipo}"><span>$</span><input name="monto" inputmode="decimal" autocomplete="off" placeholder="0.00" value="${montoVal}" aria-label="Monto"></label>
+    <label class="amount t-${f.tipo}"><span>$</span><input name="monto" inputmode="${f.tipo === 'ajuste' ? 'text' : 'decimal'}" autocomplete="off" placeholder="0.00" value="${montoVal}" aria-label="Monto"></label>
     ${campos}
     <label class="field"><span class="lbl">Concepto (opcional)</span><input name="nota" maxlength="140" value="${esc(f.nota || '')}" placeholder="Ej. Súper semanal"></label>
     ${fDate('fecha', 'Fecha', f.fecha)}
@@ -902,10 +918,8 @@ function formCuenta(c = null) {
   const saldoVal = c ? (tipo === 'credito' ? -num(c.saldo_inicial) : num(c.saldo_inicial)) : '';
   const inner = `
     ${fText('nombre', 'Nombre', c?.nombre, 'maxlength="40" placeholder="Ej. BBVA Nómina" required')}
-    <div class="row2">
-      <label class="field"><span class="lbl">Tipo</span><select name="tipo">${Object.entries(TIPOS_CUENTA).map(([k, l]) => `<option value="${k}" ${k === tipo ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-      ${fText('banco', 'Banco (opcional)', c?.banco, 'maxlength="40" placeholder="Ej. BBVA"')}
-    </div>
+    <label class="field"><span class="lbl">Tipo</span><select name="tipo">${Object.entries(TIPOS_CUENTA).map(([k, l]) => `<option value="${k}" ${k === tipo ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    ${fText('banco', 'Banco (opcional)', c?.banco, 'maxlength="40" placeholder="Ej. BBVA"')}
     <label class="field"><span class="lbl"><span class="no-credito">${c ? 'Saldo inicial' : 'Saldo actual'}</span><span class="only-credito">${c ? 'Deuda inicial' : 'Deuda actual de la tarjeta'}</span></span>
       <input name="saldo" inputmode="decimal" autocomplete="off" placeholder="0.00" value="${saldoVal === '' ? '' : saldoVal}"></label>
     ${c ? '<p class="hint">El saldo de hoy = este monto inicial + todos los movimientos. Para cuadrar contra el banco usa "Ajustar saldo".</p>' : ''}
@@ -1134,7 +1148,8 @@ const ACT = {
   'close-sheet': () => closeSheet(),
   'export-csv': () => exportCSV(),
   'export-json': () => exportJSON(),
-  sync: async () => { if (await run(cargar, 'Datos actualizados')) render(); },
+  sync: async () => { if (await run(cargar, 'Datos actualizados')) { ui.error = null; render(); } },
+  retry: () => cargarYMostrar(),
   logout: async () => { if (confirm('¿Cerrar sesión?')) await Store.signOut(); },
   'reset-demo': async () => {
     if (!confirm('¿Borrar todos los datos del modo demo?')) return;
@@ -1175,7 +1190,7 @@ document.addEventListener('visibilitychange', () => {
    ===================================================================== */
 async function cargarYMostrar() {
   ui.loading = true; render();
-  try { await cargar(); } catch (e) { console.error(e); toast('No se pudieron cargar los datos: ' + e.message, 'err'); }
+  try { await cargar(); ui.error = null; } catch (e) { console.error(e); ui.error = e.message || String(e); }
   ui.loading = false; render();
 }
 
